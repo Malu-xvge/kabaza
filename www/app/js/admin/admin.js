@@ -479,7 +479,7 @@
           ui.field('Vehicle type', 'vehicle_type', { value: 'Bajaj Boxer' }) +
           ui.field('Plate number', 'plate_number') +
         '</div>' +
-        ui.field('City', 'city', { value: 'Lilongwe' }),
+        ui.field('City', 'city', { value: 'Salima' }),
         '<button class="btn btn--ghost" data-close>Cancel</button><button class="btn btn--primary" data-action="ok">Add</button>');
       if (!choice || choice.action !== 'ok') return;
       var v = choice.values;
@@ -561,7 +561,7 @@
   async function zoneForm(zone, session) {
     var html =
       ui.field('Zone name', 'name', { value: zone && zone.name, required: true }) +
-      ui.field('City', 'city', { value: (zone && zone.city) || 'Lilongwe' }) +
+      ui.field('City', 'city', { value: (zone && zone.city) || 'Salima' }) +
       '<div class="form-grid">' +
         ui.field('Centre latitude', 'center_lat', { type: 'number', step: '0.0001', value: (zone && zone.center_lat) || -13.9626 }) +
         ui.field('Centre longitude', 'center_lng', { type: 'number', step: '0.0001', value: (zone && zone.center_lng) || 33.7741 }) +

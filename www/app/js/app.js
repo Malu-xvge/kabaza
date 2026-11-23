@@ -40,6 +40,41 @@
     return (session && session.profile && session.profile.role) || 'customer';
   }
 
+  async function postApi(path, payload) {
+    var base = String((window.KBZ_CONFIG || {}).paymentApiBase || '').replace(/\/+$/, '');
+    if (!/^https?:\/\//i.test(base)) throw new Error('Account service unavailable');
+    var response = await fetch(base + path, {
+      method: 'POST',
+      headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload || {})
+    });
+    var body = await response.json().catch(function () { return {}; });
+    if (!response.ok) throw new Error(body.message || 'Request failed');
+    return body;
+  }
+
+  // One sign-out path for every control (topbar, sidebar, APK). db.signOut()
+  // clears local auth state even when the network call is slow or fails.
+  function maybePromptLocation() {
+    if (KBZ.permissions && session) {
+      KBZ.permissions.ensureLocation().catch(function (e) {
+        console.warn('[KABAZA] location permission prompt skipped', e);
+      });
+    }
+  }
+
+  async function doSignOut() {
+    try {
+      await db.signOut();
+    } catch (err) {
+      console.warn('[KABAZA] sign-out fallback:', err && err.message);
+    }
+    session = null;
+    location.hash = '#/login';
+    renderLogin();
+    ui.toast('Signed out', 'success');
+  }
+
   function renderShell(activePath) {
     var app = document.getElementById('app');
     var r = role();
@@ -61,6 +96,7 @@
             '<span class="topbar__user-name">' + ui.esc((p && p.full_name) || 'Account') + '</span>' +
             '<span class="caret">▾</span>' +
           '</button>' +
+          '<button class="icon-btn topbar__logout" id="topbar-sign-out" title="Sign out" aria-label="Sign out">↪</button>' +
         '</header>' +
         '<div class="app-body">' +
           '<aside class="sidebar" id="sidebar">' +
@@ -102,12 +138,9 @@
     });
 
     var signOut = document.getElementById('sign-out');
-    if (signOut) signOut.addEventListener('click', async function () {
-      await db.signOut();
-      session = null;
-      location.hash = '#/login';
-      renderLogin();
-    });
+    if (signOut) signOut.addEventListener('click', doSignOut);
+    var topbarSignOut = document.getElementById('topbar-sign-out');
+    if (topbarSignOut) topbarSignOut.addEventListener('click', doSignOut);
 
     var switchRole = document.getElementById('switch-role');
     if (switchRole) switchRole.addEventListener('click', function () {
@@ -141,11 +174,11 @@
           '<a href="../index.html" class="brand brand--light"><span class="brand__mark">K</span>' +
           '<span class="brand__word">KABAZA</span></a>' +
           '<div class="login-art__copy">' +
-            '<h1>Move Malawi.<br><span>One ride at a time.</span></h1>' +
+            '<h1>Move Salima.<br><span>One ride at a time.</span></h1>' +
             '<p>Rides, deliveries, food, groceries and your favourite drinks — ordered from one place.</p>' +
           '</div>' +
           '<div class="login-art__stats">' +
-            '<div><strong>3</strong><span>cities at launch</span></div>' +
+            '<div><strong>Salima</strong><span>our first town</span></div>' +
             '<div><strong>18+</strong><span>verified alcohol</span></div>' +
             '<div><strong>24/7</strong><span>riders online</span></div>' +
           '</div>' +
@@ -169,9 +202,14 @@
               '</div>' +
               '<button class="btn btn--primary btn--block" type="submit">Sign in</button>' +
             '</form>' +
+            '<button class="link-button login-forgot" id="forgot-password">Forgot your password?</button>' +
             '<div class="login-divider"><span>or</span></div>' +
-            '<button class="btn btn--ghost btn--block" id="create-account">Create an account</button>' +
-            '<p class="fineprint">By continuing you agree to the KABAZA terms. Alcohol orders require age verification.</p>' +
+            '<button class="btn btn--ghost btn--block" id="phone-signin">📱 Sign in with phone number</button>' +
+            '<button class="btn btn--primary btn--block" id="create-account">Create an account</button>' +
+            '<p class="fineprint">Phone-first sign-up — no Gmail needed. By continuing you agree to the ' +
+            '<a href="../terms.html" target="_blank" rel="noopener">Terms</a> and ' +
+            '<a href="../privacy.html" target="_blank" rel="noopener">Privacy Policy</a>. ' +
+            'Alcohol orders require age verification.</p>' +
           '</div>' +
         '</div>' +
       '</div>';
@@ -186,6 +224,7 @@
         session = await db.signIn(values.email, values.password, values.role);
         location.hash = '#/' + (session.profile.role === 'admin' ? 'admin' : session.profile.role === 'rider' ? 'rider' : 'home');
         router.resolve();
+        maybePromptLocation();
         ui.toast('Welcome to KABAZA', 'success');
       } catch (err) {
         ui.toast(err.message || 'Could not sign in', 'error');
@@ -194,29 +233,35 @@
       }
     });
 
+    document.getElementById('forgot-password').addEventListener('click', function () {
+      location.hash = '#/recover';
+      router.resolve();
+    });
+
     document.getElementById('create-account').addEventListener('click', function () {
-      ui.formModal('Create your KABAZA account',
-        ui.field('Full name', 'name', { placeholder: 'Chisomo Banda', required: true }) +
-        ui.field('Email address', 'email', { type: 'email', required: true }) +
-        ui.field('Phone number', 'phone', { placeholder: '+265 999 000 000' }) +
-        ui.field('Password', 'password', { type: 'password', required: true }) +
-        ui.field('I am a', 'role', { type: 'select', options: [
-          { value: 'customer', label: 'Customer' }, { value: 'rider', label: 'Rider' }
-        ] }),
+      location.hash = '#/register';
+      router.resolve();
+    });
+
+    document.getElementById('phone-signin').addEventListener('click', function () {
+      ui.formModal('Sign in with your phone',
+        ui.field('Mobile number', 'phone', { type: 'tel', required: true, placeholder: '0999 123 456' }) +
+        ui.field('Password', 'password', { type: 'password', required: true }),
         '<button class="btn btn--ghost" data-close>Cancel</button>' +
-        '<button class="btn btn--primary" data-action="create">Create account</button>'
+        '<button class="btn btn--primary" data-action="signin">Sign in</button>'
       ).then(async function (result) {
-        if (!result || result.action !== 'create') return;
-        var body = result.values;
+        if (!result || result.action !== 'signin') return;
+        var phone = KBZ.auth.normalizePhone(result.values.phone);
+        if (!phone) { ui.toast('Enter a valid Malawian number', 'error'); return; }
         try {
-          session = await db.signUp(body.email, body.password, {
-            full_name: body.name, phone: body.phone, role: body.role
-          });
-          location.hash = '#/' + (session.profile.role === 'rider' ? 'rider' : 'home');
+          var auth = await postApi('/api/auth/login', { phone: phone, password: result.values.password });
+          session = await db.setSessionFromTokens(auth.session.accessToken, auth.session.refreshToken);
+          location.hash = '#/' + (session.profile.role === 'admin' ? 'admin' : session.profile.role === 'rider' ? 'rider' : 'home');
           router.resolve();
-          ui.toast('Account created', 'success');
+          maybePromptLocation();
+          ui.toast('Welcome to KABAZA', 'success');
         } catch (err) {
-          ui.toast(err.message || 'Could not create account', 'error');
+          ui.toast(err.message || 'Could not sign in', 'error');
         }
       });
     });
@@ -239,6 +284,12 @@
   function registerRoutes() {
     router.add('login', function () {
       renderLogin();
+    });
+    router.add('register', function () {
+      KBZ.auth.register();
+    });
+    router.add('recover', function () {
+      KBZ.auth.recover();
     });
 
     router.add('home', async function (ctx) {
@@ -375,6 +426,10 @@
     KBZ.payments.resumePending().catch(function (e) {
       console.warn('Pending payment check skipped', e);
     });
+
+    // Trigger Android's runtime location dialog once in the APK, after login.
+    // A refusal is not fatal: the app still works, but maps cannot pinpoint.
+    maybePromptLocation();
 
     if (!session) {
       location.hash = '#/login';

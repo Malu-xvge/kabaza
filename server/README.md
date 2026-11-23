@@ -34,6 +34,28 @@ payment before any order is marked paid.
     cannot be forged. Responds `201 { entry }`.
 - `GET /payment/return` — "Return to KABAZA" page shown after cancel/complete.
 
+### Phone authentication endpoints
+
+- `POST /api/auth/otp/request` `{ phone, purpose: 'register'|'reset' }`
+  - Normalises to `+265…`, checks duplicate/inactive accounts and rate limits.
+  - Sends a 6-digit code via the configured SMS or WhatsApp adapter.
+  - Returns `{ ok, channel, maskedPhone, expiresInSeconds, resendAfterSeconds }`.
+  - **Never returns the code.** Without a configured provider: `503 provider_not_configured`.
+  - Unknown number for `reset` gets the same success response as a known number, but no message is sent.
+- `POST /api/auth/otp/verify` `{ phone, purpose, code }`
+  - Constant-time comparison against the stored hash; 5 attempts max.
+  - On success returns a short-lived HMAC-signed `verificationToken` (10 minutes).
+- `POST /api/auth/register` `{ phone, fullName, email?, password, city?, photoDataUrl?, termsAccepted, privacyAccepted, verificationToken }`
+  - Creates a Supabase Auth user and a **customer** profile only.
+  - No email → internal identity `<digits>@phone.kabaza.local` (no Gmail needed).
+  - Optional photo is uploaded to the `avatars` bucket by the service role.
+  - Returns Supabase access/refresh tokens so the app can start a session without a password round-trip.
+- `POST /api/auth/login` `{ phone, password }` — phone + password sign-in for accounts created without an email.
+- `POST /api/auth/reset-password` `{ phone, verificationToken, newPassword }` — OTP-backed recovery without an inbox.
+
+All auth routes use the service role. OTP codes, hashes, challenges and token
+signing happen only on this server; the app never receives them.
+
 ## Local test (no real money)
 
 ```powershell
@@ -50,8 +72,16 @@ $env:BASE_URL="http://localhost:8787"
 $env:SUPABASE_URL="https://YOUR-PROJECT.supabase.co"
 $env:SUPABASE_SERVICE_ROLE_KEY="YOUR-SERVICE-ROLE-KEY"
 $env:ALLOWED_ORIGINS="*"
+# Optional: test OTP against a local mock SMS endpoint, e.g. http://localhost:8793/send
+$env:OTP_PROVIDER="sms"
+$env:SMS_API_URL="http://localhost:8793/send"
+$env:SMS_API_BODY_TEMPLATE='{"to":"{phone}","message":"{message}"}'
 node server.js
 ```
+
+Run the OTP database migration in Supabase first:
+`supabase/migrations/20261123_phone_otp.sql`. With no OTP provider the auth
+endpoints correctly return `503 provider_not_configured`.
 
 Use a **test/demo** Supabase project for local runs. Never put a real service
 role key in a committed file. Copy `.env.example` to `.env` for local work
@@ -88,6 +118,9 @@ the order become paid after verification.
    - `ALLOWED_ORIGINS` = your GitHub Pages origin, or `*` while testing
    - `SUPABASE_URL` = your Supabase project URL
    - `SUPABASE_SERVICE_ROLE_KEY` = your Supabase service role key
+   - `PAYCHANGU_WEBHOOK_SECRET` = webhook secret from PayChangu dashboard
+   - `OTP_PROVIDER` = `whatsapp` or `sms`, plus that provider's variables from `.env.example`
+   - `OTP_TOKEN_SECRET` = optional; otherwise derived from the service role key
 7. Set `www/app/js/config.js` to the Render URL:
 
 ```js
@@ -108,7 +141,11 @@ Render's free tier sleeps after inactivity, so the first request can take ~30s.
 | `PORT` | Listen port. Defaults to `8787`. |
 | `ALLOWED_ORIGINS` | Comma-separated CORS origins, or `*` for all. |
 | `SUPABASE_URL` | Supabase project URL. |
-| `SUPABASE_SERVICE_ROLE_KEY` | Server-only key used for `orders`, `payments`, `order_events`. |
+| `SUPABASE_SERVICE_ROLE_KEY` | Server-only key used for `orders`, `payments`, `order_events`, phone auth and avatar uploads. |
+| `OTP_PROVIDER` | `whatsapp` or `sms`. Empty = OTP endpoints fail closed with 503. |
+| `OTP_TOKEN_SECRET` | Optional HMAC secret for 10-minute verification tokens; derived from the service key when empty. |
+| `WHATSAPP_ACCESS_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_OTP_TEMPLATE`, `WHATSAPP_TEMPLATE_LANGUAGE`, `WHATSAPP_API_VERSION` | WhatsApp Cloud API settings. Template body must use `{{1}}` for the code and `{{2}}` for expiry minutes. |
+| `SMS_API_URL`, `SMS_API_METHOD`, `SMS_API_BODY_TEMPLATE`, `SMS_API_HEADERS`, `SMS_API_AUTH_TOKEN`, `SMS_API_MESSAGE` | Generic SMS HTTP adapter. Supports `{phone}`, `{digits}`, `{code}` and `{message}` placeholders. |
 
 If the PayChangu secret is missing, `/health` reports `configured: false` and
 payment routes return `503 { error: 'payments_not_configured' }`. If Supabase
@@ -126,4 +163,10 @@ env is missing, payment routes return `503 { error: 'database_not_configured' }`
   request body keyed with `PAYCHANGU_WEBHOOK_SECRET`. Invalid requests get 403.
   Even a valid IPN is only logged — it can never mark an order paid. Payment
   status always comes from the server's `/verify-payment/:txRef` call.
+- OTP codes are sent only to the configured provider, stored only as salted
+  hashes, rate-limited and expired after 10 minutes. Nothing logs a code and no
+  endpoint returns one. The `phone_otp_challenges` table has RLS enabled with no
+  client policies.
+- Verification tokens are HMAC-signed and single-use; registration and password
+  reset reject a reused token.
 - Do not commit `.env` or log request bodies containing credentials.

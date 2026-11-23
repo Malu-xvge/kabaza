@@ -6,11 +6,11 @@
 
 -- Zones ----------------------------------------------------------------------
 insert into public.zones (id, name, city, center_lat, center_lng, radius_km, base_fare, per_km, is_active) values
-  ('00000000-0000-0000-0000-000000000001', 'Lilongwe City Centre',   'Lilongwe', -13.9626, 33.7741, 3.0, 800, 300, true),
-  ('00000000-0000-0000-0000-000000000002', 'Kanengo',                'Lilongwe', -13.9550, 33.7850, 4.0, 800, 300, true),
-  ('00000000-0000-0000-0000-000000000003', 'Area 25',                'Lilongwe', -13.9740, 33.7600, 2.5, 800, 300, true),
-  ('00000000-0000-0000-0000-000000000004', 'Blantyre City Centre',   'Blantyre', -15.7873, 35.0130, 3.0, 800, 300, true),
-  ('00000000-0000-0000-0000-000000000005', 'Limbe',                  'Blantyre', -15.7960, 35.0450, 3.0, 800, 300, true)
+  ('00000000-0000-0000-0000-000000000001', 'Salima Town Centre',   'Salima', -13.8990, 34.6020, 3.0, 800, 300, true),
+  ('00000000-0000-0000-0000-000000000002', 'Senga Bay',                'Salima', -13.7667, 34.6167, 4.0, 800, 300, true),
+  ('00000000-0000-0000-0000-000000000003', 'Chipoka',                'Salima', -13.9667, 34.5333, 2.5, 800, 300, true),
+  ('00000000-0000-0000-0000-000000000004', 'Kalimba',   'Salima', -13.8800, 34.6500, 3.0, 800, 300, true),
+  ('00000000-0000-0000-0000-000000000005', 'Chipoka',                  'Salima', -13.9250, 34.5800, 3.0, 800, 300, true)
 on conflict (id) do nothing;
 
 -- Categories -----------------------------------------------------------------
@@ -24,12 +24,12 @@ on conflict (id) do nothing;
 
 -- Vendors --------------------------------------------------------------------
 insert into public.vendors (id, name, category, logo_url, address, city, phone, is_active, is_kabaza_owned) values
-  ('00000000-0000-0000-0000-000000000020', 'KABAZA Kitchen',        'food',    '/app/assets/vendor.svg', 'City Centre',        'Lilongwe', '+265 888 100 201', true,  true),
-  ('00000000-0000-0000-0000-000000000021', 'KABAZA Mart',           'grocery', '/app/assets/vendor.svg', 'Kamuzu Central Hospital Road', 'Lilongwe', '+265 888 100 202', true,  true),
-  ('00000000-0000-0000-0000-000000000022', 'KABAZA Drinks & Spirits','alcohol', '/app/assets/vendor.svg', 'City Centre',        'Lilongwe', '+265 888 100 203', true,  true),
-  ('00000000-0000-0000-0000-000000000023', 'Shoprite Lilongwe',     'grocery', '/app/assets/vendor.svg', 'Kanengo Industrial Area', 'Lilongwe', '+265 888 200 301', true,  false),
-  ('00000000-0000-0000-0000-000000000024', 'Blantyre Corner Store', 'general', '/app/assets/vendor.svg', 'Haile Selassie Avenue', 'Blantyre', '+265 888 200 401', true,  false),
-  ('00000000-0000-0000-0000-000000000025', 'Limbe Fresh Market',    'food',    '/app/assets/vendor.svg', 'Limbe Market',       'Blantyre', '+265 888 200 402', true,  false)
+  ('00000000-0000-0000-0000-000000000020', 'KABAZA Kitchen',        'food',    '/app/assets/vendor.svg', 'City Centre',        'Salima', '+265 888 100 201', true,  true),
+  ('00000000-0000-0000-0000-000000000021', 'KABAZA Mart',           'grocery', '/app/assets/vendor.svg', 'Salima District Hospital Road', 'Salima', '+265 888 100 202', true,  true),
+  ('00000000-0000-0000-0000-000000000022', 'KABAZA Drinks & Spirits','alcohol', '/app/assets/vendor.svg', 'City Centre',        'Salima', '+265 888 100 203', true,  true),
+  ('00000000-0000-0000-0000-000000000023', 'Salima Trading Centre',     'grocery', '/app/assets/vendor.svg', 'Senga Bay Industrial Area', 'Salima', '+265 888 200 301', true,  false),
+  ('00000000-0000-0000-0000-000000000024', 'Salima Corner Store', 'general', '/app/assets/vendor.svg', 'Main Road', 'Salima', '+265 888 200 401', true,  false),
+  ('00000000-0000-0000-0000-000000000025', 'Salima Fresh Market',    'food',    '/app/assets/vendor.svg', 'Salima Market',       'Salima', '+265 888 200 402', true,  false)
 on conflict (id) do nothing;
 
 -- Products (prices in MWK) ----------------------------------------------------
@@ -46,7 +46,7 @@ values
   ('00000000-0000-0000-0000-000000000104', '00000000-0000-0000-0000-000000000020', '00000000-0000-0000-0000-000000000010', 'Grilled Chicken (Whole)', 'Whole chicken grilled with local spices.', 9500, '/app/assets/product.svg', 'KBZ-FD-004', 12, true, 'kabaza', 'In KABAZA stock', false, 'each'),
   ('00000000-0000-0000-0000-000000000105', '00000000-0000-0000-0000-000000000020', '00000000-0000-0000-0000-000000000010', 'Mandasi (6 pcs)', 'Six golden mandasi, best with tea.', 1500, '/app/assets/product.svg', 'KBZ-FD-005', 60, true, 'kabaza', 'In KABAZA stock', false, 'pack'),
   ('00000000-0000-0000-0000-000000000106', '00000000-0000-0000-0000-000000000020', '00000000-0000-0000-0000-000000000010', 'Bean Stew & Rice', 'Beans cooked in coconut with steamed rice.', 3500, '/app/assets/product.svg', 'KBZ-FD-006', 35, true, 'kabaza', 'In KABAZA stock', false, 'plate'),
-  ('00000000-0000-0000-0000-000000000107', '00000000-0000-0000-0000-000000000025', '00000000-0000-0000-0000-000000000010', 'Chicken & Chips', 'Grilled chickenpieces with chips from Limbe Fresh Market.', 6500, '/app/assets/product.svg', 'PTN-FD-001', 20, true, 'partner', 'Bought from a partner shop', false, 'plate'),
+  ('00000000-0000-0000-0000-000000000107', '00000000-0000-0000-0000-000000000025', '00000000-0000-0000-0000-000000000010', 'Chicken & Chips', 'Grilled chickenpieces with chips from Salima Fresh Market.', 6500, '/app/assets/product.svg', 'PTN-FD-001', 20, true, 'partner', 'Bought from a partner shop', false, 'plate'),
   ('00000000-0000-0000-0000-000000000108', '00000000-0000-0000-0000-000000000020', '00000000-0000-0000-0000-000000000010', 'Samosa (4 pcs)', 'Four spicy meat samosas.', 1800, '/app/assets/product.svg', 'KBZ-FD-007', 50, true, 'kabaza', 'In KABAZA stock', false, 'pack'),
   ('00000000-0000-0000-0000-000000000109', '00000000-0000-0000-0000-000000000025', '00000000-0000-0000-0000-000000000010', 'Fried Cassava Chips', 'Crisp fried cassava from the market.', 2000, '/app/assets/product.svg', 'PTN-FD-002', 25, true, 'partner', 'Bought from a partner shop', false, 'portion'),
   ('00000000-0000-0000-0000-000000000110', '00000000-0000-0000-0000-000000000025', '00000000-0000-0000-0000-000000000010', 'Roasted Maize (1 cob)', 'Freshly roasted maize on the cob.', 1200, '/app/assets/product.svg', 'PTN-FD-003', 40, true, 'partner', 'Bought from a partner shop', false, 'each'),
@@ -105,7 +105,7 @@ insert into public.settings (key, value) values
   ('app', '{
       "appName": "KABAZA",
       "supportPhone": "+265 888 100 100",
-      "city": "Lilongwe",
+      "city": "Salima",
       "version": "1.0.0",
       "minAge": 18,
       "demoMode": true
@@ -173,7 +173,7 @@ values
   (
     '00000000-0000-0000-0000-000000000902', 3, 'product',
     '00000000-0000-0000-0000-000000000124', 'sourced',
-    '{"sku": "PTN-GR-001", "source": "partner", "vendor": "Shoprite Lilongwe", "source_label": "Bought from a partner shop"}'::jsonb,
+    '{"sku": "PTN-GR-001", "source": "partner", "vendor": "Salima Trading Centre", "source_label": "Bought from a partner shop"}'::jsonb,
     '3eae9276dc9b5c1c461b5f29585ce3e4fdf0c93dccb0e6c276bd07c5e1f5f9ec',
     '3eed5b920a5f0229986068373c1722a24dc1f4d95d0c93004cdc5a66e23ee28c',
     null, null, null

@@ -158,7 +158,7 @@
         '<div class="greeting">' +
           '<div><p class="eyebrow">Welcome to KABAZA</p><h1>Hey ' + ui.esc(name) + ' 👋</h1>' +
           '<p class="muted">Where are we taking you today?</p></div>' +
-          '<div class="greeting__city">📍 ' + ui.esc(session.profile.city || 'Lilongwe') + '</div>' +
+          '<div class="greeting__city">📍 ' + ui.esc(session.profile.city || 'Salima') + '</div>' +
         '</div>' +
 
         (active ? activeOrderCard(active) : '') +
@@ -217,8 +217,8 @@
           '<div class="route-inputs">' +
             '<div class="route-line"><span class="dot dot--green"></span><div class="route-inputs__line"></div><span class="dot dot--lime"></span></div>' +
             '<div class="route-inputs__fields">' +
-              ui.field('Pickup location', 'pickup_address', { placeholder: 'e.g. City Centre, Lilongwe', required: true }) +
-              ui.field('Destination', 'dropoff_address', { placeholder: 'e.g. Kanengo', required: true }) +
+              ui.field('Pickup location', 'pickup_address', { placeholder: 'e.g. Town Centre, Salima', required: true }) +
+              ui.field('Destination', 'dropoff_address', { placeholder: 'e.g. Senga Bay', required: true }) +
             '</div>' +
           '</div>' +
           ui.field('Your phone number', 'phone', { placeholder: '+265 999 000 000', required: true }) +
@@ -449,7 +449,7 @@
           '<div>' +
             ui.card(
               '<h3>Delivery details</h3>' +
-              ui.field('Delivery address', 'address', { placeholder: 'e.g. Area 25, Lilongwe', required: true, value: session.profile.city || '' }) +
+              ui.field('Delivery address', 'address', { placeholder: 'e.g. Chipoka, Salima', required: true, value: session.profile.city || '' }) +
               ui.field('Phone number', 'phone', { placeholder: '+265 999 000 000', required: true, value: session.profile.phone || '' }) +
               ui.field('Delivery note', 'note', { type: 'textarea', placeholder: 'Landmark, instructions…' })
             ) +

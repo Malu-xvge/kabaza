@@ -8,13 +8,17 @@ const express = require('express');
 const cors = require('cors');
 const crypto = require('crypto');
 const { createClient } = require('@supabase/supabase-js');
+const registerAuthRoutes = require('./auth-routes');
+const otp = require('./otp');
 
 const app = express();
 app.set('trust proxy', 1);
 // Keep the exact bytes of every JSON request. PayChangu signs the RAW body,
 // so re-serialising req.body would produce a different hash and always fail.
 app.use(express.json({
-  limit: '32kb',
+  // Larger limit only because optional profile photos arrive as base64 here.
+  // Size and MIME type are validated again in otp.parsePhoto().
+  limit: '4mb',
   verify: (req, res, buf) => { req.rawBody = buf.toString('utf8'); }
 }));
 
@@ -376,9 +380,9 @@ app.get('/payment/return', (req, res) => {
 <html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>KABAZA payment</title>
 <style>
-body{font-family:system-ui,sans-serif;background:#052e1c;color:#fff;display:flex;min-height:100vh;align-items:center;justify-content:center;text-align:center;margin:0;padding:24px}
+body{font-family:system-ui,sans-serif;background:#041426;color:#fff;display:flex;min-height:100vh;align-items:center;justify-content:center;text-align:center;margin:0;padding:24px}
 div{max-width:420px}
-h1{color:#b7f34a;font-size:1.5rem;margin:0 0 12px}
+h1{color:#4cc9f0;font-size:1.5rem;margin:0 0 12px}
 p{opacity:.85;line-height:1.6;margin:0 0 10px}
 .small{font-size:.85rem;opacity:.6}
 </style></head>
@@ -425,6 +429,10 @@ app.post('/api/ledger/append', async (req, res) => {
   return res.status(201).json({ entry: data });
 });
 
+// Phone-first passenger registration / recovery. Routes are registered before
+// the catch-all error handler and use the service role exclusively.
+registerAuthRoutes(app, { getDb, SERVICE_KEY, SUPABASE_URL, dbFailure });
+
 app.use((err, req, res, next) => {
   console.error('[KABAZA] request error:', err && err.message);
   if (res.headersSent) return next(err);
@@ -437,4 +445,5 @@ app.listen(PORT, () => {
   console.log(`Database: ${getDb() ? 'configured' : 'NOT configured - check Supabase env'}`);
   console.log(`Payments: ${SECRET ? 'configured' : 'NOT configured - check PAYCHANGU_SECRET_KEY'}`);
   console.log(`Webhook signing: ${WEBHOOK_SECRET ? 'configured' : 'NOT configured - check PAYCHANGU_WEBHOOK_SECRET'}`);
+  console.log(`OTP provider: ${otp.providerConfigured() ? otp.providerName() : 'NOT configured - phone sign-up returns 503 until OTP_PROVIDER is set'}`);
 });

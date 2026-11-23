@@ -20,11 +20,11 @@
   ];
 
   var VENDORS = [
-    { id: '00000000-0000-0000-0000-000000000201', name: 'KabaZa Mart — Lilongwe', category: 'general', logo_url: '', address: 'City Centre, Lilongwe', city: 'Lilongwe', phone: '+265 111 000 001', is_active: true, is_kabaza_owned: true, created_at: new Date().toISOString() },
-    { id: '00000000-0000-0000-0000-000000000202', name: 'KabaZa Mart — Blantyre', category: 'general', logo_url: '', address: 'Limbe, Blantyre', city: 'Blantyre', phone: '+265 111 000 002', is_active: true, is_kabaza_owned: true, created_at: new Date().toISOString() },
-    { id: '00000000-0000-0000-0000-000000000203', name: 'Kanengo Wholesale', category: 'grocery', logo_url: '', address: 'Kanengo, Lilongwe', city: 'Lilongwe', phone: '+265 111 000 003', is_active: true, is_kabaza_owned: false, created_at: new Date().toISOString() },
-    { id: '00000000-0000-0000-0000-000000000204', name: 'Mama Mia Takeaway', category: 'food', logo_url: '', address: 'Victoria Avenue, Lilongwe', city: 'Lilongwe', phone: '+265 111 000 004', is_active: true, is_kabaza_owned: false, created_at: new Date().toISOString() },
-    { id: '00000000-0000-0000-0000-000000000205', name: 'Bottle Store 24', category: 'alcohol', logo_url: '', address: 'Area 25, Lilongwe', city: 'Lilongwe', phone: '+265 111 000 005', is_active: true, is_kabaza_owned: false, created_at: new Date().toISOString() }
+    { id: '00000000-0000-0000-0000-000000000201', name: 'KabaZa Mart — Salima', category: 'general', logo_url: '', address: 'Town Centre, Salima', city: 'Salima', phone: '+265 111 000 001', is_active: true, is_kabaza_owned: true, created_at: new Date().toISOString() },
+    { id: '00000000-0000-0000-0000-000000000202', name: 'KabaZa Mart — Salima', category: 'general', logo_url: '', address: 'Chipoka, Salima', city: 'Salima', phone: '+265 111 000 002', is_active: true, is_kabaza_owned: true, created_at: new Date().toISOString() },
+    { id: '00000000-0000-0000-0000-000000000203', name: 'Salima Wholesale', category: 'grocery', logo_url: '', address: 'Senga Bay, Salima', city: 'Salima', phone: '+265 111 000 003', is_active: true, is_kabaza_owned: false, created_at: new Date().toISOString() },
+    { id: '00000000-0000-0000-0000-000000000204', name: 'Mama Mia Takeaway', category: 'food', logo_url: '', address: 'Main Road, Salima', city: 'Salima', phone: '+265 111 000 004', is_active: true, is_kabaza_owned: false, created_at: new Date().toISOString() },
+    { id: '00000000-0000-0000-0000-000000000205', name: 'Bottle Store 24', category: 'alcohol', logo_url: '', address: 'Chipoka, Salima', city: 'Salima', phone: '+265 111 000 005', is_active: true, is_kabaza_owned: false, created_at: new Date().toISOString() }
   ];
 
   var PRODUCT_SEED = [
@@ -91,23 +91,23 @@
   function demoDefaults() {
     return {
       profiles: [
-        { id: 'demo-customer', role: 'customer', full_name: 'Chisomo Banda', phone: '+265 991 234 567', avatar_url: '', city: 'Lilongwe', is_active: true, email: 'customer@kabaza.mw', created_at: new Date().toISOString() },
-        { id: 'demo-rider', role: 'rider', full_name: 'Yamikani Phiri', phone: '+265 988 111 222', avatar_url: '', city: 'Lilongwe', is_active: true, email: 'rider@kabaza.mw', created_at: new Date().toISOString() },
-        { id: 'demo-admin', role: 'admin', full_name: 'KabaZa Operations', phone: '+265 111 000 000', avatar_url: '', city: 'Lilongwe', is_active: true, email: 'admin@kabaza.mw', created_at: new Date().toISOString() }
+        { id: 'demo-customer', role: 'customer', full_name: 'Chisomo Banda', phone: '+265 991 234 567', avatar_url: '', city: 'Salima', is_active: true, email: 'customer@kabaza.mw', created_at: new Date().toISOString() },
+        { id: 'demo-rider', role: 'rider', full_name: 'Yamikani Phiri', phone: '+265 988 111 222', avatar_url: '', city: 'Salima', is_active: true, email: 'rider@kabaza.mw', created_at: new Date().toISOString() },
+        { id: 'demo-admin', role: 'admin', full_name: 'KabaZa Operations', phone: '+265 111 000 000', avatar_url: '', city: 'Salima', is_active: true, email: 'admin@kabaza.mw', created_at: new Date().toISOString() }
       ],
       riders: [
-        { id: '00000000-0000-0000-0000-000000000301', profile_id: 'demo-rider', vehicle_type: 'Bajaj Boxer', plate_number: 'KBZ 1234', phone: '+265 988 111 222', city: 'Lilongwe', is_online: true, is_approved: true, lat: -13.9626, lng: 33.7741, heading: 45, rating: 4.9, total_earnings: 48200, created_at: new Date().toISOString() },
-        { id: '00000000-0000-0000-0000-000000000302', profile_id: 'demo-rider-2', vehicle_type: 'TVS HLX', plate_number: 'KBZ 5678', phone: '+265 999 333 444', city: 'Lilongwe', is_online: false, is_approved: true, lat: -13.98, lng: 33.79, heading: 0, rating: 4.7, total_earnings: 31500, created_at: new Date().toISOString() }
+        { id: '00000000-0000-0000-0000-000000000301', profile_id: 'demo-rider', vehicle_type: 'Bajaj Boxer', plate_number: 'KBZ 1234', phone: '+265 988 111 222', city: 'Salima', is_online: true, is_approved: true, lat: -13.8990, lng: 34.6020, heading: 45, rating: 4.9, total_earnings: 48200, created_at: new Date().toISOString() },
+        { id: '00000000-0000-0000-0000-000000000302', profile_id: 'demo-rider-2', vehicle_type: 'TVS HLX', plate_number: 'KBZ 5678', phone: '+265 999 333 444', city: 'Salima', is_online: false, is_approved: true, lat: -13.7667, lng: 34.6167, heading: 0, rating: 4.7, total_earnings: 31500, created_at: new Date().toISOString() }
       ],
       vendors: VENDORS,
       categories: CATEGORIES,
       products: demoProducts(),
       zones: [
-        { id: '00000000-0000-0000-0000-000000000401', name: 'Lilongwe City Centre', city: 'Lilongwe', center_lat: -13.9626, center_lng: 33.7741, radius_km: 8, base_fare: 800, per_km: 300, is_active: true },
-        { id: '00000000-0000-0000-0000-000000000402', name: 'Kanengo', city: 'Lilongwe', center_lat: -13.9245, center_lng: 33.8115, radius_km: 10, base_fare: 900, per_km: 300, is_active: true },
-        { id: '00000000-0000-0000-0000-000000000403', name: 'Area 25', city: 'Lilongwe', center_lat: -13.9990, center_lng: 33.7830, radius_km: 7, base_fare: 800, per_km: 350, is_active: true },
-        { id: '00000000-0000-0000-0000-000000000404', name: 'Blantyre City Centre', city: 'Blantyre', center_lat: -15.7861, center_lng: 35.0056, radius_km: 9, base_fare: 800, per_km: 300, is_active: true },
-        { id: '00000000-0000-0000-0000-000000000405', name: 'Limbe', city: 'Blantyre', center_lat: -15.7950, center_lng: 35.0380, radius_km: 8, base_fare: 800, per_km: 320, is_active: true }
+        { id: '00000000-0000-0000-0000-000000000401', name: 'Salima Town Centre', city: 'Salima', center_lat: -13.8990, center_lng: 34.6020, radius_km: 8, base_fare: 800, per_km: 300, is_active: true },
+        { id: '00000000-0000-0000-0000-000000000402', name: 'Senga Bay', city: 'Salima', center_lat: -13.7667, center_lng: 34.6167, radius_km: 10, base_fare: 900, per_km: 300, is_active: true },
+        { id: '00000000-0000-0000-0000-000000000403', name: 'Chipoka', city: 'Salima', center_lat: -13.9667, center_lng: 34.5333, radius_km: 7, base_fare: 800, per_km: 350, is_active: true },
+        { id: '00000000-0000-0000-0000-000000000404', name: 'Kalimba', city: 'Salima', center_lat: -13.8800, center_lng: 34.6500, radius_km: 9, base_fare: 800, per_km: 300, is_active: true },
+        { id: '00000000-0000-0000-0000-000000000405', name: 'Salima Fresh Market', city: 'Salima', center_lat: -13.9250, center_lng: 34.5800, radius_km: 8, base_fare: 800, per_km: 320, is_active: true }
       ],
       settings: {
         delivery_fee: 700,
@@ -206,7 +206,7 @@
       if (!profile) {
         profile = {
           id: uid('usr'), role: d.demoRole || 'customer', full_name: 'KabaZa User',
-          phone: '+265 999 000 000', avatar_url: '', city: 'Lilongwe',
+          phone: '+265 999 000 000', avatar_url: '', city: 'Salima',
           is_active: true, email: d.demoEmail, created_at: new Date().toISOString()
         };
         d.profiles.push(profile);
@@ -234,14 +234,14 @@
         var name = email ? email.split('@')[0].replace(/[._-]/g, ' ') : 'KabaZa User';
         profile = {
           id: uid('usr'), role: d.demoRole, full_name: name.replace(/\b\w/g, function (c) { return c.toUpperCase(); }),
-          phone: '+265 999 000 000', avatar_url: '', city: 'Lilongwe', is_active: true,
+          phone: '+265 999 000 000', avatar_url: '', city: 'Salima', is_active: true,
           email: d.demoEmail, created_at: new Date().toISOString()
         };
         d.profiles.push(profile);
         if (d.demoRole === 'rider') {
           d.riders.push({
             id: uid('rider'), profile_id: profile.id, vehicle_type: 'Bajaj Boxer',
-            plate_number: 'KBZ 0000', phone: profile.phone, city: 'Lilongwe',
+            plate_number: 'KBZ 0000', phone: profile.phone, city: 'Salima',
             is_online: false, is_approved: true, lat: -13.9626, lng: 33.7741,
             heading: 0, rating: 5, total_earnings: 0, created_at: new Date().toISOString()
           });
@@ -269,16 +269,57 @@
     return getSession();
   }
 
+  // Supabase persists its session under `sb-<project-ref>-auth-token`. If the
+  // network call hangs (common on flaky mobile data) we still clear local state
+  // so the user is never trapped in a "signed out but still logged in" screen.
+  function clearLocalAuth() {
+    try {
+      Object.keys(localStorage).filter(function (k) {
+        return k.indexOf('sb-') === 0;
+      }).forEach(function (k) { localStorage.removeItem(k); });
+    } catch (e) {}
+    try {
+      Object.keys(sessionStorage).filter(function (k) {
+        return k.indexOf('sb-') === 0;
+      }).forEach(function (k) { sessionStorage.removeItem(k); });
+    } catch (e) {}
+  }
+
   async function signOut() {
     if (useDemo) {
       var d = readDemo();
       d.demoEmail = '';
       writeDemo(d);
+      clearLocalAuth();
       return;
     }
     var c = needSb();
-    var result = await c.auth.signOut();
+    try {
+      // Never let a slow auth server block the UI. The local fallback below is
+      // authoritative for this device; the server token is invalidated when the
+      // request eventually completes (or expires naturally).
+      await Promise.race([
+        c.auth.signOut(),
+        new Promise(function (resolve) { setTimeout(resolve, 4500); })
+      ]).catch(function (e) {
+        if (window.console && console.warn) console.warn('[KABAZA] remote sign-out failed:', e && e.message);
+      });
+    } finally {
+      clearLocalAuth();
+      client = null; // force a clean client on the next boot
+    }
+  }
+
+  // Used after server-verified phone OTP registration/login: the backend hands
+  // back short-lived Supabase tokens over HTTPS, never a password or OTP code.
+  async function setSessionFromTokens(accessToken, refreshToken) {
+    if (useDemo) throw new Error('Phone sign-in is not available in demo mode');
+    var result = await needSb().auth.setSession({
+      access_token: String(accessToken || ''),
+      refresh_token: String(refreshToken || '')
+    });
     if (result.error) throw result.error;
+    return getSession();
   }
 
   // ------------------------------------------------------------------ profiles
@@ -309,7 +350,7 @@
     var d = readDemo();
     var row = Object.assign({
       id: uid('usr'), role: 'customer', full_name: 'New user',
-      phone: '', avatar_url: '', city: 'Lilongwe', is_active: true,
+      phone: '', avatar_url: '', city: 'Salima', is_active: true,
       created_at: new Date().toISOString()
     }, profile || {});
     d.profiles.push(row);
@@ -724,6 +765,7 @@
   KBZ.db = {
     init: init, isDemo: isDemo, uid: uid,
     getSession: getSession, signIn: signIn, signUp: signUp, signOut: signOut,
+    setSessionFromTokens: setSessionFromTokens,
     getProfile: getProfile, updateProfile: updateProfile, createProfile: createProfile, listUsers: listUsers,
     listProducts: listProducts, getProduct: getProduct, saveProduct: saveProduct, deleteProduct: deleteProduct,
     listCategories: listCategories,

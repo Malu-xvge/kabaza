@@ -210,7 +210,7 @@
       ui.field('Vehicle type', 'vehicle_type', { value: 'Bajaj Boxer' }) +
       ui.field('Plate number', 'plate_number', { placeholder: 'KBZ 1234' }) +
       ui.field('Phone', 'phone', { value: session.profile.phone || '' }) +
-      ui.field('City', 'city', { value: session.profile.city || 'Lilongwe' }),
+      ui.field('City', 'city', { value: session.profile.city || 'Salima' }),
       '<button class="btn btn--ghost" data-close>Cancel</button>' +
       '<button class="btn btn--primary" data-action="save">Save</button>'
     ).then(async function (result) {

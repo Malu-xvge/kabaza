@@ -9,7 +9,7 @@
     "open:android": "npx cap open android",
     "build:apk": "npx cap sync android && cd android && .\\gradlew.bat assembleDebug",
     "release:apk": "npm run build:apk && node -e \"require('fs').mkdirSync('releases',{recursive:true});require('fs').copyFileSync('android/app/build/outputs/apk/debug/app-debug.apk','releases/kabaza.apk')\"",
-    "check": "node --check www/app/js/config.js && node --check www/app/js/ui.js && node --check www/app/js/db.js && node --check www/app/js/router.js && node --check www/app/js/payments.js && node --check www/app/js/customer/customer.js && node --check www/app/js/rider/rider.js && node --check www/app/js/admin/admin.js && node --check www/app/js/app.js && node --check www/js/marketing.js && node --check server/server.js && node --check server/mock-provider.js"
+    "check": "node --check www/app/js/config.js && node --check www/app/js/ui.js && node --check www/app/js/db.js && node --check www/app/js/router.js && node --check www/app/js/payments.js && node --check www/app/js/permissions.js && node --check www/app/js/auth.js && node --check www/app/js/customer/customer.js && node --check www/app/js/rider/rider.js && node --check www/app/js/admin/admin.js && node --check www/app/js/app.js && node --check www/js/marketing.js && node --check server/server.js && node --check server/otp.js && node --check server/auth-routes.js && node --check server/mock-provider.js"
   },
   "dependencies": {
     "@capacitor/android": "^8.5.0",

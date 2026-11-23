@@ -83,12 +83,12 @@ const server = http.createServer((req, res) => {
 <style>
 body{font-family:system-ui,sans-serif;background:#052e1c;color:#fff;margin:0;display:flex;min-height:100vh;align-items:center;justify-content:center;padding:24px}
 .card{max-width:380px;width:100%;background:#0a3c26;border-radius:18px;padding:24px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.45)}
-h1{font-size:1.1rem;color:#b7f34a;margin:0 0 8px}
+h1{font-size:1.1rem;color:#4cc9f0;margin:0 0 8px}
 .amount{font-size:2rem;font-weight:800;margin:12px 0;color:#fff}
 .ref{font-size:.72rem;opacity:.55;word-break:break-all;margin-bottom:20px}
 button{display:block;width:100%;padding:14px;border:0;border-radius:12px;font-size:1rem;font-weight:700;cursor:pointer;margin-top:10px}
-.pay{background:#b7f34a;color:#052e1c}
-.cancel{background:transparent;color:#b7f34a;border:1px solid #2f6b4d}
+.pay{background:#4cc9f0;color:#041426}
+.cancel{background:transparent;color:#4cc9f0;border:1px solid #10529b}
 </style></head><body><div class="card">
 <h1>Mock PayChangu — KABAZA</h1>
 <div class="amount">MK ${p.amount.toLocaleString('en-US')}</div>

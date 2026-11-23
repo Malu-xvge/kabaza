@@ -5,11 +5,14 @@
 1. Create a new **free** Supabase project (https://supabase.com → *New project*).
 2. Open **SQL Editor** and paste/run `supabase/schema.sql` in full.
 3. Then paste/run `supabase/seed.sql` in full. Both files are idempotent and safe to re-run.
+4. Then paste/run `supabase/migrations/20261123_phone_otp.sql` (also idempotent). It adds `phone_e164`, verification columns, the `phone_otp_challenges` table and the public `avatars` bucket.
 
 ## 2. Auth
 
-- **Authentication → Providers**: enable **Email** and **Phone**.
-- Phone OTP needs an SMS provider (Twilio) configured under *Authentication → Providers → Phone*; without it, use email sign-in while developing.
+- **Authentication → Providers**: enable **Email**. Leave **Confirm email** off so the backend can create verified accounts directly.
+- **Do not enable Supabase Phone auth.** Phone verification is handled by the KABAZA backend, which sends an OTP through its own SMS/WhatsApp provider, hashes the code and exchanges it for short-lived Supabase session tokens. This keeps the same flow working on basic phones and without Twilio in Supabase.
+- The OTP provider is configured in `server/.env` (`OTP_PROVIDER=whatsapp` or `sms`). With no provider, `/api/auth/otp/request` returns `503 provider_not_configured`.
+- The backend also supports phone + password login for accounts created without an email.
 - `handle_new_user()` (installed by `schema.sql`) automatically creates a `profiles` row with `role = 'customer'` for every new `auth.users` row, copying `full_name`/`phone` from user metadata.
 
 ### First admin
@@ -49,6 +52,7 @@ All 12 tables have RLS enabled.
 | `order_items`, `order_events` | readable when parent order is readable via `can_read_order()` | admins; customer may add items to own pending order; assigned rider may insert order events |
 | `payments` | admins and the customer who owns the order | **service role only** (no client write policies) |
 | `ledger_entries` | any authenticated user (transparent provenance) | admin-only policy + backend service role via `append_ledger_entry()`; no update/delete policies |
+| `phone_otp_challenges` | **no client policies at all** | service role only; codes stored as salted hashes, RLS enabled |
 
 `is_admin()`, `can_read_order()`, `is_order_rider()` and `customer_owns_order()` are `SECURITY DEFINER` with a pinned `search_path`, which prevents policy recursion. The backend uses the service role, which bypasses RLS — keep that key on the server only.
 
