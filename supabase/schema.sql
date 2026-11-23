@@ -328,7 +328,9 @@ create or replace function public.append_ledger_entry(
 returns public.ledger_entries
 language plpgsql
 security definer
-set search_path = public, pg_temp
+-- Supabase installs pgcrypto into the "extensions" schema, so digest() must be
+-- reachable here. A missing schema in search_path is harmless on plain Postgres.
+set search_path = public, extensions, pg_temp
 as $$
 declare
   v_prev_hash text;

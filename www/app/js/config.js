@@ -14,10 +14,10 @@
     supabaseUrl: 'https://lireychwvpdqrbhxocka.supabase.co',
     supabaseAnonKey: 'sb_publishable_sMKyFv0R4DlOwjD4MxNM_Q_Uav6nbNb',
 
-    // Public URL of the KABAZA payments service (server/).
-    // Leave empty while testing locally — checkout will use the mock flow.
-    paymentApiBase: '',
-    paymentsEnabled: false,
+    // Public URL of the KABAZA payments service (server/ on Render).
+    // Never put the PayChangu or Supabase secret keys here.
+    paymentApiBase: 'https://kabaza-payments.onrender.com',
+    paymentsEnabled: true,
 
     // Demo role used when Supabase is not configured. Change in the login screen.
     demoRole: 'customer',
