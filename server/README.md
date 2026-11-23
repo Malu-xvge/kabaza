@@ -144,7 +144,7 @@ Render's free tier sleeps after inactivity, so the first request can take ~30s.
 | `SUPABASE_SERVICE_ROLE_KEY` | Server-only key used for `orders`, `payments`, `order_events`, phone auth and avatar uploads. |
 | `OTP_PROVIDER` | `whatsapp` or `sms`. Empty = OTP endpoints fail closed with 503. |
 | `OTP_TOKEN_SECRET` | Optional HMAC secret for 10-minute verification tokens; derived from the service key when empty. |
-| `WHATSAPP_ACCESS_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_OTP_TEMPLATE`, `WHATSAPP_TEMPLATE_LANGUAGE`, `WHATSAPP_API_VERSION` | WhatsApp Cloud API settings. Template body must use `{{1}}` for the code and `{{2}}` for expiry minutes. |
+| `WHATSAPP_ACCESS_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_OTP_TEMPLATE`, `WHATSAPP_TEMPLATE_LANGUAGE`, `WHATSAPP_TEMPLATE_KIND`, `WHATSAPP_API_VERSION` | WhatsApp Cloud API settings. Use an approved Meta **authentication** template with `{{1}}` for the code; its expiry is fixed footer text. Set `WHATSAPP_TEMPLATE_KIND=custom` only for a custom utility template with `{{1}}` code and `{{2}}` expiry minutes. |
 | `SMS_API_URL`, `SMS_API_METHOD`, `SMS_API_BODY_TEMPLATE`, `SMS_API_HEADERS`, `SMS_API_AUTH_TOKEN`, `SMS_API_MESSAGE` | Generic SMS HTTP adapter. Supports `{phone}`, `{digits}`, `{code}` and `{message}` placeholders. |
 
 If the PayChangu secret is missing, `/health` reports `configured: false` and

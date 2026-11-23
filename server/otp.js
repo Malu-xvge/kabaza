@@ -115,7 +115,16 @@ function sendOtp(phone, code, purpose) {
     const version = (process.env.WHATSAPP_API_VERSION || 'v21.0').trim();
     const phoneId = process.env.WHATSAPP_PHONE_NUMBER_ID.trim();
     const template = (process.env.WHATSAPP_OTP_TEMPLATE || 'kbz_otp').trim();
-    const language = (process.env.WHATSAPP_TEMPLATE_LANGUAGE || 'en').trim();
+    const language = (process.env.WHATSAPP_TEMPLATE_LANGUAGE || 'en_US').trim();
+    // Meta authentication templates hard-code the expiry text in the template
+    // footer, so they only accept {{1}} (the code). Set WHATSAPP_TEMPLATE_KIND=custom
+    // only if you created a custom utility template with {{1}} and {{2}}.
+    const parameters = (process.env.WHATSAPP_TEMPLATE_KIND || 'authentication').trim().toLowerCase() === 'custom'
+      ? [
+          { type: 'text', text: code },
+          { type: 'text', text: String(OTP_TTL_SECONDS / 60) }
+        ]
+      : [{ type: 'text', text: code }];
     const payload = {
       messaging_product: 'whatsapp',
       to: phone.replace(/\D/g, ''),
@@ -125,10 +134,7 @@ function sendOtp(phone, code, purpose) {
         language: { code: language },
         components: [{
           type: 'body',
-          parameters: [
-            { type: 'text', text: code },
-            { type: 'text', text: String(OTP_TTL_SECONDS / 60) }
-          ]
+          parameters
         }]
       }
     };
