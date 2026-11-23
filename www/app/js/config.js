@@ -11,8 +11,8 @@
 
     // Paste your new KABAZA Supabase project URL and anon/publishable key here.
     // Leave supabaseUrl empty to run the full app in local demo mode.
-    supabaseUrl: '',
-    supabaseAnonKey: '',
+    supabaseUrl: 'https://lireychwvpdqrbhxocka.supabase.co',
+    supabaseAnonKey: 'sb_publishable_sMKyFv0R4DlOwjD4MxNM_Q_Uav6nbNb',
 
     // Public URL of the KABAZA payments service (server/).
     // Leave empty while testing locally — checkout will use the mock flow.

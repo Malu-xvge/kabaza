@@ -32,112 +32,10 @@
 create extension if not exists pgcrypto;
 
 -- -----------------------------------------------------------------------------
--- 0. Helper functions
---    All helpers are SECURITY DEFINER with a pinned search_path. This is what
---    prevents the RLS policies below from recursing into the same table.
--- -----------------------------------------------------------------------------
-
--- Is the current authenticated user an active admin?
--- Security definer => the profiles lookup is NOT re-checked by the profiles
--- RLS policies that call is_admin(), so there is no infinite recursion.
-create or replace function public.is_admin()
-returns boolean
-language sql
-stable
-security definer
-set search_path = public, pg_temp
-as $$
-  select exists (
-    select 1
-    from public.profiles p
-    where p.id = auth.uid()
-      and p.role = 'admin'
-      and p.is_active
-  );
-$$;
-
--- Single source of truth for reading an order and its children.
--- Customer: own orders. Rider: assigned orders + pending job offers.
--- Admin: everything. Anon (auth.uid() is null): nothing.
-create or replace function public.can_read_order(p_order_id uuid)
-returns boolean
-language sql
-stable
-security definer
-set search_path = public, pg_temp
-as $$
-  select exists (
-    select 1
-    from public.orders o
-    where o.id = p_order_id
-      and (
-        public.is_admin()
-        or o.customer_id = auth.uid()
-        or exists (
-             select 1 from public.riders r
-             where r.id = o.rider_id
-               and r.profile_id = auth.uid()
-           )
-        or (
-             o.status = 'pending'
-             and exists (
-               select 1 from public.riders r
-               where r.profile_id = auth.uid()
-                 and r.is_approved
-             )
-           )
-      )
-  );
-$$;
-
--- True when the current user is the rider assigned to this order.
-create or replace function public.is_order_rider(p_order_id uuid)
-returns boolean
-language sql
-stable
-security definer
-set search_path = public, pg_temp
-as $$
-  select exists (
-    select 1
-    from public.orders o
-    join public.riders r on r.id = o.rider_id
-    where o.id = p_order_id
-      and r.profile_id = auth.uid()
-  );
-$$;
-
--- True when the current user placed this order (used by payments RLS).
-create or replace function public.customer_owns_order(p_order_id uuid)
-returns boolean
-language sql
-stable
-security definer
-set search_path = public, pg_temp
-as $$
-  select exists (
-    select 1 from public.orders o
-    where o.id = p_order_id
-      and o.customer_id = auth.uid()
-  );
-$$;
-
--- Used by the riders UPDATE policy so a rider cannot approve themselves.
-create or replace function public.current_rider_approval(p_rider_id uuid)
-returns boolean
-language sql
-stable
-security definer
-set search_path = public, pg_temp
-as $$
-  select coalesce(
-    (select r.is_approved from public.riders r where r.id = p_rider_id),
-    false
-  );
-$$;
-
--- -----------------------------------------------------------------------------
 -- 1. Tables
+--    Note: helper functions are defined AFTER the tables, because LANGUAGE sql
+--    bodies are parsed at CREATE FUNCTION time and cannot reference a table
+--    that does not exist yet.
 -- -----------------------------------------------------------------------------
 
 create table if not exists public.profiles (
@@ -310,6 +208,111 @@ create table if not exists public.ledger_entries (
   actor_id uuid null references public.profiles(id) on delete set null,
   created_at timestamptz not null default now()
 );
+
+-- -----------------------------------------------------------------------------
+-- 0b. Helper functions (defined after tables so LANGUAGE sql bodies resolve)
+--     All helpers are SECURITY DEFINER with a pinned search_path. This is what
+--     prevents the RLS policies below from recursing into the same table.
+-- -----------------------------------------------------------------------------
+
+-- Is the current authenticated user an active admin?
+-- Security definer => the profiles lookup is NOT re-checked by the profiles
+-- RLS policies that call is_admin(), so there is no infinite recursion.
+create or replace function public.is_admin()
+returns boolean
+language sql
+stable
+security definer
+set search_path = public, pg_temp
+as $$
+  select exists (
+    select 1
+    from public.profiles p
+    where p.id = auth.uid()
+      and p.role = 'admin'
+      and p.is_active
+  );
+$$;
+
+-- Single source of truth for reading an order and its children.
+-- Customer: own orders. Rider: assigned orders + pending job offers.
+-- Admin: everything. Anon (auth.uid() is null): nothing.
+create or replace function public.can_read_order(p_order_id uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public, pg_temp
+as $$
+  select exists (
+    select 1
+    from public.orders o
+    where o.id = p_order_id
+      and (
+        public.is_admin()
+        or o.customer_id = auth.uid()
+        or exists (
+             select 1 from public.riders r
+             where r.id = o.rider_id
+               and r.profile_id = auth.uid()
+           )
+        or (
+             o.status = 'pending'
+             and exists (
+               select 1 from public.riders r
+               where r.profile_id = auth.uid()
+                 and r.is_approved
+             )
+           )
+      )
+  );
+$$;
+
+-- True when the current user is the rider assigned to this order.
+create or replace function public.is_order_rider(p_order_id uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public, pg_temp
+as $$
+  select exists (
+    select 1
+    from public.orders o
+    join public.riders r on r.id = o.rider_id
+    where o.id = p_order_id
+      and r.profile_id = auth.uid()
+  );
+$$;
+
+-- True when the current user placed this order (used by payments RLS).
+create or replace function public.customer_owns_order(p_order_id uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public, pg_temp
+as $$
+  select exists (
+    select 1 from public.orders o
+    where o.id = p_order_id
+      and o.customer_id = auth.uid()
+  );
+$$;
+
+-- Used by the riders UPDATE policy so a rider cannot approve themselves.
+create or replace function public.current_rider_approval(p_rider_id uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public, pg_temp
+as $$
+  select coalesce(
+    (select r.is_approved from public.riders r where r.id = p_rider_id),
+    false
+  );
+$$;
 
 -- Append one hash-chained entry. SECURITY DEFINER so the backend/service role
 -- (and trusted admin callers) can append with a single RPC. The write itself
