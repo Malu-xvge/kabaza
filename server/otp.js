@@ -114,42 +114,61 @@ function sendOtp(phone, code, purpose) {
   if (provider === 'whatsapp') {
     const version = (process.env.WHATSAPP_API_VERSION || 'v21.0').trim();
     const phoneId = process.env.WHATSAPP_PHONE_NUMBER_ID.trim();
-    const template = (process.env.WHATSAPP_OTP_TEMPLATE || 'kbz_otp').trim();
-    const language = (process.env.WHATSAPP_TEMPLATE_LANGUAGE || 'en_US').trim();
-    // Meta authentication templates hard-code the expiry text in the template
-    // footer, so they only accept {{1}} (the code). A copy-code button needs the
-    // same code a second time in a url button component. Set
-    // WHATSAPP_TEMPLATE_KIND=custom only if you created a custom utility template
-    // with {{1}} (code) and {{2}} (expiry minutes).
-    const isCustom = (process.env.WHATSAPP_TEMPLATE_KIND || 'authentication').trim().toLowerCase() === 'custom';
-    const components = isCustom
-      ? [{
-          type: 'body',
-          parameters: [
-            { type: 'text', text: code },
-            { type: 'text', text: String(OTP_TTL_SECONDS / 60) }
-          ]
-        }]
-      : [
-          { type: 'body', parameters: [{ type: 'text', text: code }] },
-          {
-            type: 'button',
-            sub_type: 'url',
-            index: '0',
-            parameters: [{ type: 'text', text: code }]
-          }
-        ];
-    const payload = {
-      messaging_product: 'whatsapp',
-      recipient_type: 'individual',
-      to: phone.replace(/\D/g, ''),
-      type: 'template',
-      template: {
-        name: template,
-        language: { code: language },
-        components
-      }
-    };
+    // Direct Send is the default: no pre-approved template is needed. Meta
+    // infers the OTP and adds a copy-code button when the body contains exactly
+    // one 4-6 digit number, so keep "ten minutes" as words, not "10 minutes".
+    const sendMode = (process.env.WHATSAPP_SEND_MODE || 'direct').trim().toLowerCase();
+    let payload;
+
+    if (sendMode === 'template') {
+      const template = (process.env.WHATSAPP_OTP_TEMPLATE || 'kbz_otp').trim();
+      const language = (process.env.WHATSAPP_TEMPLATE_LANGUAGE || 'en_US').trim();
+      // Meta authentication templates hard-code the expiry text in the template
+      // footer, so they only accept {{1}} (the code). A copy-code button needs the
+      // same code a second time in a url button component. Set
+      // WHATSAPP_TEMPLATE_KIND=custom only if you created a custom utility
+      // template with {{1}} (code) and {{2}} (expiry minutes).
+      const isCustom = (process.env.WHATSAPP_TEMPLATE_KIND || 'authentication').trim().toLowerCase() === 'custom';
+      const components = isCustom
+        ? [{
+            type: 'body',
+            parameters: [
+              { type: 'text', text: code },
+              { type: 'text', text: String(OTP_TTL_SECONDS / 60) }
+            ]
+          }]
+        : [
+            { type: 'body', parameters: [{ type: 'text', text: code }] },
+            {
+              type: 'button',
+              sub_type: 'url',
+              index: '0',
+              parameters: [{ type: 'text', text: code }]
+            }
+          ];
+      payload = {
+        messaging_product: 'whatsapp',
+        recipient_type: 'individual',
+        to: phone.replace(/\D/g, ''),
+        type: 'template',
+        template: {
+          name: template,
+          language: { code: language },
+          components
+        }
+      };
+    } else {
+      payload = {
+        messaging_product: 'whatsapp',
+        recipient_type: 'individual',
+        to: phone.replace(/\D/g, ''),
+        type: 'text',
+        category: 'authentication',
+        text: {
+          body: `Your KABAZA verification code is ${code}. It expires in ten minutes. Do not share it with anyone.`
+        }
+      };
+    }
     return fetch(`https://graph.facebook.com/${encodeURIComponent(version)}/${encodeURIComponent(phoneId)}/messages`, {
       method: 'POST',
       headers: {
