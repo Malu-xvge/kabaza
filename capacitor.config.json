@@ -1,0 +1,13 @@
+{
+  "appId": "com.malumbo.kabaza",
+  "appName": "KABAZA",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https"
+  },
+  "plugins": {
+    "Browser": {
+      "presentationStyle": "fullscreen"
+    }
+  }
+}

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">KABAZA</string>
+    <string name="title_activity_main">KABAZA</string>
+    <string name="package_name">com.malumbo.kabaza</string>
+    <string name="custom_url_scheme">com.malumbo.kabaza</string>
+</resources>
