@@ -351,6 +351,43 @@ p{opacity:.85;line-height:1.6;margin:0 0 10px}
 </div></body></html>`);
 });
 
+// Supply-chain provenance. The web app never writes to ledger_entries directly;
+// it POSTs here and this service calls the security-definer RPC with the service
+// role, so the hash chain cannot be forged by a client.
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+function validUuidOrNull(value) {
+  return value == null || UUID_RE.test(String(value));
+}
+
+app.post('/api/ledger/append', async (req, res) => {
+  const client = requireDatabase(res);
+  if (!client) return;
+  const b = req.body || {};
+  const entityType = String(b.entity_type || '').trim().slice(0, 64);
+  const eventType = String(b.event_type || '').trim().slice(0, 64);
+  const entityId = b.entity_id == null ? null : String(b.entity_id);
+  const actorId = b.actor_id == null ? null : String(b.actor_id);
+  const payload = b.payload && typeof b.payload === 'object' && !Array.isArray(b.payload)
+    ? b.payload : {};
+
+  if (!entityType || !eventType || !validUuidOrNull(entityId) || !validUuidOrNull(actorId)) {
+    return res.status(400).json({
+      error: 'invalid_ledger_entry',
+      message: 'entity_type and event_type are required; ids must be UUIDs when present'
+    });
+  }
+
+  const { data, error } = await client.rpc('append_ledger_entry', {
+    p_entity_type: entityType,
+    p_entity_id: entityId,
+    p_event_type: eventType,
+    p_payload: payload,
+    p_actor_id: actorId
+  });
+  if (error) return dbFailure(res, error, 'ledger append');
+  return res.status(201).json({ entry: data });
+});
+
 app.use((err, req, res, next) => {
   console.error('[KABAZA] request error:', err && err.message);
   if (res.headersSent) return next(err);

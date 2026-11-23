@@ -647,6 +647,10 @@
     return (hex + hex + hex + hex + hex + hex + hex + hex).slice(0, 64);
   }
 
+  function ledgerApiBase() {
+    return String(cfg.paymentApiBase || '').replace(/\/+$/, '');
+  }
+
   async function appendLedger(entry) {
     if (useDemo) {
       var d = readDemo();
@@ -669,9 +673,43 @@
       writeDemo(d);
       return row;
     }
-    // Future: POST to server /api/ledger/append. Until that endpoint exists,
-    // silently skip rather than break an order flow.
-    return null;
+    // Live mode: provenance writes go through the backend service, which calls
+    // the security-definer append_ledger_entry() RPC with the service role. The
+    // client never writes ledger_entries directly, so the hash chain cannot be
+    // forged from the browser. If no backend is configured yet, skip silently
+    // so normal order/payment flows still work; the entry is simply not recorded.
+    var base = ledgerApiBase();
+    if (!/^https?:\/\//i.test(base)) return null;
+    var controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    var timer = controller ? setTimeout(function () { controller.abort(); }, 15000) : null;
+    try {
+      var res = await fetch(base + '/api/ledger/append', {
+        method: 'POST',
+        signal: controller ? controller.signal : undefined,
+        headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          entity_type: entry.entity_type || 'order',
+          entity_id: entry.entity_id || null,
+          event_type: entry.event_type || 'update',
+          payload: entry.payload || {},
+          actor_id: entry.actor_id || null
+        })
+      });
+      var body = await res.json().catch(function () { return null; });
+      if (!res.ok) {
+        throw new Error((body && (body.message || body.error)) || ('HTTP ' + res.status));
+      }
+      return (body && body.entry) || body || null;
+    } catch (e) {
+      // Ledger writes are best-effort here: a network or backend problem must
+      // never roll back a successful order/payment. Surface it in the console.
+      if (window.console && console.warn) {
+        console.warn('[KABAZA] ledger append skipped:', e && e.message);
+      }
+      return null;
+    } finally {
+      if (timer) clearTimeout(timer);
+    }
   }
 
   // ----------------------------------------------------------------- subscribe

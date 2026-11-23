@@ -27,6 +27,11 @@ payment before any order is marked paid.
   - Returns `{ status, orderId, amount, currency }`.
 - `POST /api/payment/callback` — PayChangu IPN. Logged and acknowledged with
   `{ received: true }`; **never** used on its own to mark an order paid.
+- `POST /api/ledger/append` `{ entity_type, entity_id?, event_type, payload?, actor_id? }`
+  - Supply-chain provenance write. Validates that ids are UUIDs (when present)
+    and calls the `append_ledger_entry()` security-definer RPC with the service
+    role. The browser never writes `ledger_entries` directly, so the hash chain
+    cannot be forged. Responds `201 { entry }`.
 - `GET /payment/return` — "Return to KABAZA" page shown after cancel/complete.
 
 ## Local test (no real money)
