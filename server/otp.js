@@ -176,9 +176,19 @@ function sendOtp(phone, code, purpose) {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify(payload)
-    }).then(function (response) {
+    }).then(async function (response) {
       if (!response.ok) {
-        console.error('[KABAZA] WhatsApp OTP provider rejected request:', response.status);
+        // Log Meta's error code/message for diagnosis. Never log the request
+        // body, the access token, or the OTP itself.
+        let detail = '';
+        try {
+          const parsed = JSON.parse(await response.text());
+          const metaError = parsed && parsed.error;
+          if (metaError) detail = ` ${metaError.code || ''} ${metaError.message || ''}`.trim().slice(0, 300);
+        } catch (e) {
+          detail = '';
+        }
+        console.error('[KABAZA] WhatsApp OTP provider rejected request:', response.status + detail);
         throw new OtpError('provider_error', 'The WhatsApp verification service is unavailable. Please try again.', 502);
       }
       return { provider: 'whatsapp' };
