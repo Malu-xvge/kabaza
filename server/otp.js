@@ -117,25 +117,37 @@ function sendOtp(phone, code, purpose) {
     const template = (process.env.WHATSAPP_OTP_TEMPLATE || 'kbz_otp').trim();
     const language = (process.env.WHATSAPP_TEMPLATE_LANGUAGE || 'en_US').trim();
     // Meta authentication templates hard-code the expiry text in the template
-    // footer, so they only accept {{1}} (the code). Set WHATSAPP_TEMPLATE_KIND=custom
-    // only if you created a custom utility template with {{1}} and {{2}}.
-    const parameters = (process.env.WHATSAPP_TEMPLATE_KIND || 'authentication').trim().toLowerCase() === 'custom'
-      ? [
-          { type: 'text', text: code },
-          { type: 'text', text: String(OTP_TTL_SECONDS / 60) }
-        ]
-      : [{ type: 'text', text: code }];
+    // footer, so they only accept {{1}} (the code). A copy-code button needs the
+    // same code a second time in a url button component. Set
+    // WHATSAPP_TEMPLATE_KIND=custom only if you created a custom utility template
+    // with {{1}} (code) and {{2}} (expiry minutes).
+    const isCustom = (process.env.WHATSAPP_TEMPLATE_KIND || 'authentication').trim().toLowerCase() === 'custom';
+    const components = isCustom
+      ? [{
+          type: 'body',
+          parameters: [
+            { type: 'text', text: code },
+            { type: 'text', text: String(OTP_TTL_SECONDS / 60) }
+          ]
+        }]
+      : [
+          { type: 'body', parameters: [{ type: 'text', text: code }] },
+          {
+            type: 'button',
+            sub_type: 'url',
+            index: '0',
+            parameters: [{ type: 'text', text: code }]
+          }
+        ];
     const payload = {
       messaging_product: 'whatsapp',
+      recipient_type: 'individual',
       to: phone.replace(/\D/g, ''),
       type: 'template',
       template: {
         name: template,
         language: { code: language },
-        components: [{
-          type: 'body',
-          parameters
-        }]
+        components
       }
     };
     return fetch(`https://graph.facebook.com/${encodeURIComponent(version)}/${encodeURIComponent(phoneId)}/messages`, {

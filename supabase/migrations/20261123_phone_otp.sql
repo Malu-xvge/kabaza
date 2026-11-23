@@ -59,6 +59,8 @@ create index if not exists phone_otp_rate_idx
 alter table public.phone_otp_challenges enable row level security;
 -- Deliberately NO policies: anon/authenticated cannot see a single row.
 revoke all on public.phone_otp_challenges from anon, authenticated;
+-- The backend service role bypasses RLS, but it still needs table privileges.
+grant select, insert, update, delete on public.phone_otp_challenges to service_role;
 
 -- Keep the table tidy. The backend only needs recent challenges for rate limits.
 create or replace function public.cleanup_phone_otp_challenges()
