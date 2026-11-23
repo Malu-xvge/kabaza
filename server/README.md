@@ -101,7 +101,8 @@ Render's free tier sleeps after inactivity, so the first request can take ~30s.
 
 | Variable | Purpose |
 |---|---|
-| `PAYCHANGU_SECRET_KEY` | Server-only PayChangu secret. Required to create/verify payments. |
+| `PAYCHANGU_SECRET_KEY` | Server-only PayChangu secret. Least-privilege scopes: `payment:read`, `payment:create`, `transaction:read`. Required to create/verify payments. |
+| `PAYCHANGU_WEBHOOK_SECRET` | Shared secret from the PayChangu dashboard. Verifies the IPN `Signature` header (HMAC-SHA256 over the raw body). IPNs are rejected if missing. |
 | `PAYCHANGU_API_BASE` | PayChangu API base. Defaults to `https://api.paychangu.com`. |
 | `BASE_URL` | Public base URL used for callback/return URLs. |
 | `PORT` | Listen port. Defaults to `8787`. |
@@ -121,6 +122,8 @@ env is missing, payment routes return `503 { error: 'database_not_configured' }`
   request body.
 - An order is marked paid only after `/verify-payment/:txRef` confirms success
   with matching currency, tx_ref and amount at least the DB amount.
-- The IPN callback is logged and acknowledged for speed, but is never trusted
-  alone — it cannot mark an order paid.
+- The IPN callback requires a valid `Signature` header: HMAC-SHA256 of the raw
+  request body keyed with `PAYCHANGU_WEBHOOK_SECRET`. Invalid requests get 403.
+  Even a valid IPN is only logged — it can never mark an order paid. Payment
+  status always comes from the server's `/verify-payment/:txRef` call.
 - Do not commit `.env` or log request bodies containing credentials.

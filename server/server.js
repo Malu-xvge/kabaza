@@ -11,7 +11,12 @@ const { createClient } = require('@supabase/supabase-js');
 
 const app = express();
 app.set('trust proxy', 1);
-app.use(express.json({ limit: '32kb' }));
+// Keep the exact bytes of every JSON request. PayChangu signs the RAW body,
+// so re-serialising req.body would produce a different hash and always fail.
+app.use(express.json({
+  limit: '32kb',
+  verify: (req, res, buf) => { req.rawBody = buf.toString('utf8'); }
+}));
 
 const allowedOrigins = (process.env.ALLOWED_ORIGINS || '*').trim();
 app.use(cors({
@@ -21,6 +26,9 @@ app.use(cors({
 }));
 
 const SECRET = (process.env.PAYCHANGU_SECRET_KEY || '').trim();
+// Separate shared secret from PayChangu dashboard -> API & Webhooks. Used only
+// to authenticate incoming IPNs; never sent to the browser or stored in git.
+const WEBHOOK_SECRET = (process.env.PAYCHANGU_WEBHOOK_SECRET || '').trim();
 const API_BASE = (process.env.PAYCHANGU_API_BASE || 'https://api.paychangu.com').replace(/\/+$/, '');
 const BASE_URL = (process.env.BASE_URL || '').replace(/\/+$/, '');
 const PORT = process.env.PORT || 8787;
@@ -324,14 +332,43 @@ app.get('/api/payment/verify/:txRef', async (req, res) => {
   });
 });
 
-// PayChangu IPN. Log it and acknowledge fast, but NEVER mark an order paid
-// from this body alone. The app/server always confirms via /verify-payment.
+// PayChangu IPN. The "Signature" header is HMAC-SHA256 over the RAW request
+// body, keyed with the webhook secret from the PayChangu dashboard. Reject
+// anything that does not verify. Even a valid IPN is only logged here: orders
+// are marked paid exclusively by /api/payment/verify/:txRef, which asks
+// PayChangu for the authoritative status. Never trust this body for money.
 app.post('/api/payment/callback', (req, res) => {
-  const txRef = (req.body && (req.body.tx_ref || req.body.txref))
+  const signature = String(req.headers['signature'] || '').trim();
+  const raw = typeof req.rawBody === 'string' ? req.rawBody : '';
+
+  if (!WEBHOOK_SECRET) {
+    console.error('[KABAZA] IPN rejected: PAYCHANGU_WEBHOOK_SECRET is not set');
+    return res.status(503).json({ received: false, error: 'webhook_not_configured' });
+  }
+  if (!signature || !raw) {
+    console.warn('[KABAZA] IPN rejected: missing signature or raw body');
+    return res.status(400).json({ received: false, error: 'missing_signature' });
+  }
+
+  const expected = crypto.createHmac('sha256', WEBHOOK_SECRET).update(raw, 'utf8').digest('hex');
+  let valid = false;
+  try {
+    const a = Buffer.from(expected, 'hex');
+    const b = Buffer.from(signature, 'hex');
+    valid = a.length === b.length && crypto.timingSafeEqual(a, b);
+  } catch (e) {
+    valid = false;
+  }
+  if (!valid) {
+    console.warn('[KABAZA] IPN rejected: invalid signature');
+    return res.status(403).json({ received: false, error: 'invalid_signature' });
+  }
+
+  const txRef = (req.body && (req.body.tx_ref || req.body.txref || req.body.reference))
     || req.query.tx_ref
     || req.query.txref;
-  console.log('[KABAZA] IPN callback received:', txRef || '(no tx_ref)');
-  res.status(200).json({ received: true });
+  console.log('[KABAZA] IPN verified:', txRef || '(no tx_ref)');
+  return res.status(200).json({ received: true });
 });
 
 app.get('/payment/return', (req, res) => {
@@ -399,4 +436,5 @@ app.listen(PORT, () => {
   console.log(`PayChangu API: ${API_BASE}`);
   console.log(`Database: ${getDb() ? 'configured' : 'NOT configured - check Supabase env'}`);
   console.log(`Payments: ${SECRET ? 'configured' : 'NOT configured - check PAYCHANGU_SECRET_KEY'}`);
+  console.log(`Webhook signing: ${WEBHOOK_SECRET ? 'configured' : 'NOT configured - check PAYCHANGU_WEBHOOK_SECRET'}`);
 });
