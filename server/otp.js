@@ -169,10 +169,16 @@ function sendOtp(phone, code, purpose) {
         }
       };
     }
+    const accessToken = process.env.WHATSAPP_ACCESS_TOKEN.trim();
+    // Diagnostics only: never log the token, the OTP, or the full request body.
+    console.log('[KABAZA] WhatsApp OTP send', JSON.stringify({
+      to: payload.to, phoneId: phoneId, version: version, sendMode: sendMode,
+      tokenLength: accessToken.length
+    }));
     return fetch(`https://graph.facebook.com/${encodeURIComponent(version)}/${encodeURIComponent(phoneId)}/messages`, {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${process.env.WHATSAPP_ACCESS_TOKEN.trim()}`,
+        Authorization: `Bearer ${accessToken}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify(payload)
