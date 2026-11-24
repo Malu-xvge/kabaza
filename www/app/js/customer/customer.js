@@ -188,8 +188,10 @@
           '<div><span>💳</span><strong>Mobile money</strong><small>Pay with PayChangu</small></div>' +
         '</div>' +
 
-        (settings.alcohol_notice ? '<p class="fineprint home-notice">' + ui.esc(settings.alcohol_notice) + '</p>' : '') +
-        '<p class="fineprint">' + ui.esc((settings.pricing_note || '') + ' · ' + (zones.length ? zones.length + ' zones available' : '')) + '</p>' +
+        (settings.alcohol_notice && (settings.alcohol_notice.message || settings.alcohol_notice.title)
+          ? '<p class="fineprint home-notice">' + ui.esc(settings.alcohol_notice.message || settings.alcohol_notice.title) + '</p>' : '') +
+        '<p class="fineprint">' + ui.esc((settings.pricing_note || 'Fares are estimates. Final fare is confirmed by your rider.') +
+          (zones.length ? ' · ' + zones.length + ' zones available' : '')) + '</p>' +
       '</div>';
 
     var products = await db.listProducts({ activeOnly: true });

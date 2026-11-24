@@ -40,6 +40,31 @@
     return (session && session.profile && session.profile.role) || 'customer';
   }
 
+  // A feature script can occasionally fail to load on a mobile network. Fail
+  // with a clear, retryable message instead of "undefined.home". One automatic
+  // retry handles a transient CDN hiccup; after that the user gets a Retry button.
+  function view(name) {
+    if (KBZ[name]) return KBZ[name];
+    var key = 'kbz:view-retry:' + name;
+    var retries = Number(sessionStorage.getItem(key) || 0);
+    if (retries < 1) {
+      sessionStorage.setItem(key, String(retries + 1));
+      ui.toast('A part of KABAZA did not load. Reloading…', 'error');
+      setTimeout(function () { location.reload(); }, 900);
+      return null;
+    }
+    throw new Error('The ' + name + ' section did not load. Check your connection and tap Retry.');
+  }
+
+  async function callView(name, method, ctx) {
+    var mod = view(name);
+    if (!mod) return;
+    if (typeof mod[method] !== 'function') {
+      throw new Error('The ' + name + ' section is out of date. Please reload KABAZA.');
+    }
+    await mod[method](ctx, session);
+  }
+
   async function postApi(path, payload) {
     var base = String((window.KBZ_CONFIG || {}).paymentApiBase || '').replace(/\/+$/, '');
     if (!/^https?:\/\//i.test(base)) throw new Error('Account service unavailable');
@@ -295,112 +320,112 @@
     router.add('home', async function (ctx) {
       if (!guard(['customer'])) return;
       renderShell('home');
-      await KBZ.customer.home(ctx, session);
+      await callView('customer', 'home', ctx);
     });
     router.add('ride', async function (ctx) {
       if (!guard(['customer'])) return;
       renderShell('ride');
-      await KBZ.customer.ride(ctx, session);
+      await callView('customer', 'ride', ctx);
     });
     router.add('delivery', async function (ctx) {
       if (!guard(['customer'])) return;
       renderShell('delivery');
-      await KBZ.customer.delivery(ctx, session);
+      await callView('customer', 'delivery', ctx);
     });
     router.add('shop', async function (ctx) {
       if (!guard(['customer'])) return;
       renderShell('shop');
-      await KBZ.customer.shop(ctx, session);
+      await callView('customer', 'shop', ctx);
     });
     router.add('shop/:category', async function (ctx) {
       if (!guard(['customer'])) return;
       renderShell('shop');
-      await KBZ.customer.shop(ctx, session);
+      await callView('customer', 'shop', ctx);
     });
     router.add('cart', async function (ctx) {
       if (!guard(['customer'])) return;
       renderShell('shop');
-      await KBZ.customer.cart(ctx, session);
+      await callView('customer', 'cart', ctx);
     });
     router.add('checkout', async function (ctx) {
       if (!guard(['customer'])) return;
       renderShell('shop');
-      await KBZ.customer.checkout(ctx, session);
+      await callView('customer', 'checkout', ctx);
     });
     router.add('orders', async function (ctx) {
       if (!guard(['customer'])) return;
       renderShell('orders');
-      await KBZ.customer.orders(ctx, session);
+      await callView('customer', 'orders', ctx);
     });
     router.add('orders/:id', async function (ctx) {
       if (!guard(['customer', 'rider', 'admin'])) return;
       renderShell(role() === 'admin' ? 'admin/orders' : role() === 'rider' ? 'rider' : 'orders');
-      if (role() === 'admin') await KBZ.admin.orderDetail(ctx, session);
-      else await KBZ.customer.orderDetail(ctx, session);
+      if (role() === 'admin') await callView('admin', 'orderDetail', ctx);
+      else await callView('customer', 'orderDetail', ctx);
     });
     router.add('profile', async function (ctx) {
       if (!guard()) return;
       renderShell('profile');
-      if (role() === 'admin') await KBZ.admin.profile(ctx, session);
-      else if (role() === 'rider') await KBZ.rider.profile(ctx, session);
-      else await KBZ.customer.profile(ctx, session);
+      if (role() === 'admin') await callView('admin', 'profile', ctx);
+      else if (role() === 'rider') await callView('rider', 'profile', ctx);
+      else await callView('customer', 'profile', ctx);
     });
 
     router.add('rider', async function (ctx) {
       if (!guard(['rider'])) return;
       renderShell('rider');
-      await KBZ.rider.jobs(ctx, session);
+      await callView('rider', 'jobs', ctx);
     });
     router.add('rider/earnings', async function (ctx) {
       if (!guard(['rider'])) return;
       renderShell('rider/earnings');
-      await KBZ.rider.earnings(ctx, session);
+      await callView('rider', 'earnings', ctx);
     });
 
     router.add('admin', async function (ctx) {
       if (!guard(['admin'])) return;
       renderShell('admin');
-      await KBZ.admin.dashboard(ctx, session);
+      await callView('admin', 'dashboard', ctx);
     });
     router.add('admin/products', async function (ctx) {
       if (!guard(['admin'])) return;
       renderShell('admin/products');
-      await KBZ.admin.products(ctx, session);
+      await callView('admin', 'products', ctx);
     });
     router.add('admin/vendors', async function (ctx) {
       if (!guard(['admin'])) return;
       renderShell('admin/vendors');
-      await KBZ.admin.vendors(ctx, session);
+      await callView('admin', 'vendors', ctx);
     });
     router.add('admin/orders', async function (ctx) {
       if (!guard(['admin'])) return;
       renderShell('admin/orders');
-      await KBZ.admin.orders(ctx, session);
+      await callView('admin', 'orders', ctx);
     });
     router.add('admin/riders', async function (ctx) {
       if (!guard(['admin'])) return;
       renderShell('admin/riders');
-      await KBZ.admin.riders(ctx, session);
+      await callView('admin', 'riders', ctx);
     });
     router.add('admin/users', async function (ctx) {
       if (!guard(['admin'])) return;
       renderShell('admin/users');
-      await KBZ.admin.users(ctx, session);
+      await callView('admin', 'users', ctx);
     });
     router.add('admin/zones', async function (ctx) {
       if (!guard(['admin'])) return;
       renderShell('admin/zones');
-      await KBZ.admin.zones(ctx, session);
+      await callView('admin', 'zones', ctx);
     });
     router.add('admin/ledger', async function (ctx) {
       if (!guard(['admin'])) return;
       renderShell('admin/ledger');
-      await KBZ.admin.ledger(ctx, session);
+      await callView('admin', 'ledger', ctx);
     });
     router.add('admin/settings', async function (ctx) {
       if (!guard(['admin'])) return;
       renderShell('admin/settings');
-      await KBZ.admin.settings(ctx, session);
+      await callView('admin', 'settings', ctx);
     });
 
     router.setNotFound(function () {

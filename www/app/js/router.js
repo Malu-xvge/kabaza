@@ -55,7 +55,8 @@
       if (main) {
         main.innerHTML = '<div class="empty-state"><h3>Something went wrong</h3><p class="muted">' +
           KBZ.ui.esc(err && err.message ? err.message : String(err)) + '</p>' +
-          '<button class="btn btn--primary" onclick="location.hash=\'#/home\'">Go home</button></div>';
+          '<button class="btn btn--primary" onclick="location.reload()">Retry</button> ' +
+          '<button class="btn" onclick="location.hash=\'#/home\'">Go home</button></div>';
       }
     }
   }
